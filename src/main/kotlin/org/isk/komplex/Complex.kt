@@ -36,13 +36,13 @@ import kotlin.math.*
  */
 @JvmInline
 value class Complex(
-    val realAndImage: Pair<Double, Double>
+    val realAndImag: Pair<Double, Double>
 ) {
 
     constructor(real: Double, imag: Double) : this(real to imag)
 
-    val real: Double get() = realAndImage.first
-    val imag: Double get() = realAndImage.second
+    val real: Double get() = realAndImag.first
+    val imag: Double get() = realAndImag.second
 
     // Binary Operators - Complex, Complex
 
@@ -201,17 +201,22 @@ value class Complex(
      * This function raises the complex number to the power of n using the exponentiation by squaring method.
      * It can be expressed more efficiently using polar complexes, which will be implemented later.
      *
-     * @param n The integer exponent.
+     * @param n The double exponent.
      */
     fun pow(n: Double): Complex {
         return this.toPolar().pow(n).toCartesian()
     }
 
+    fun pow(n: Complex): Complex{
+        return this.toPolar().run {
+            E.pow(n.real * ln(this.magnitude) - this.angle * n.imag) * e(n.imag * ln(this.magnitude) + this.angle * n.real)
+        }
+    }
     // Unary Operators
 
     operator fun unaryMinus() = this * -1
     operator fun unaryPlus() = this
-    operator fun get(index: Int) = if(index == 0) realAndImage.first else if(index == 1) realAndImage.second else throw IndexOutOfBoundsException("complex is of dimension 2, given: $index")
+    operator fun get(index: Int) = if(index == 0) realAndImag.first else if(index == 1) realAndImag.second else throw IndexOutOfBoundsException("complex is of dimension 2, given: $index")
 
     /**
      * Returns the real part of the complex number.
@@ -355,9 +360,7 @@ value class PolarComplex(
      * @return A new complex number in Cartesian form.
      */
     fun toCartesian(): Complex {
-        val realPart = magnitude * cos(angle)
-        val imagPart = magnitude * sin(angle)
-        return Complex(realPart, imagPart)
+        return magnitude * e(angle)
     }
 
     /**
@@ -385,11 +388,26 @@ value class PolarComplex(
         val newAngle = angle * n
         return PolarComplex(newMag to newAngle)
     }
+
+
 }
 
+typealias euler = (angle: Double)-> Complex
+
+val e: euler = {angle->
+    Complex(
+        cos(angle), sin(angle)
+    )
+
+}
 val i = Complex(0.0, 1.0)
 fun Number.toComplex() = Complex(toDouble(), 0.0)
 operator fun Number.plus(c: Complex) = c + this.toDouble()
 operator fun Number.minus(c: Complex) = -c + this.toDouble()
 operator fun Number.times(c: Complex) = c * this.toDouble()
 operator fun Number.div(c: Complex) = this.toComplex() / c
+
+fun main()
+{
+    3 + 2* i + 1
+}
